@@ -505,7 +505,7 @@ class Sheet
      */
     public function fromCollection(FromCollection $sheetExport)
     {
-        $this->appendRows($sheetExport->collection()->all(), $sheetExport);
+        $this->appendRows(new Collection($sheetExport->collection()->all()), $sheetExport);
     }
 
     /**
