@@ -358,6 +358,53 @@ class Reader
     }
 
     /**
+     * Fixes incorrect namespace prefixes in XML data by removing them.
+     *
+     * Some XML files contain unexpected namespace prefixes (e.g., x:, d:, ns0:),
+     * which can cause parsing issues. This function removes these prefixes
+     * to make the XML structure compatible with expected formats.
+     *
+     * @return void
+     */
+    public function scanNonStandardNamespaces(): void
+    {
+        $securityScanner = $this->reader->getSecurityScanner();
+
+        if ($securityScanner instanceof XmlScanner) {
+            $securityScanner->setAdditionalCallback([$this, 'fixXmlNamespaces']);
+        }
+    }
+
+    /**
+     * Fixes incorrect XML namespace prefixes.
+     *
+     * @param  string  $xml
+     * @return array|string
+     */
+    public function fixXmlNamespaces(string $xml)
+    {
+        return str_replace(
+            [
+                '<x:',
+                '</x:',
+                '<d:',
+                '</d:',
+                '<ns0:',
+                '</ns0:',
+            ],
+            [
+                '<',
+                '</',
+                '<',
+                '</',
+                '<',
+                '</',
+            ],
+            $xml
+        );
+    }
+
+    /**
      * @param  $import
      * @param  $sheetImport
      * @param  $index
@@ -463,52 +510,5 @@ class Reader
         unset($this->sheetImports, $this->spreadsheet);
 
         $this->currentFile->delete();
-    }
-
-    /**
-     * Fixes incorrect namespace prefixes in XML data by removing them.
-     *
-     * Some XML files contain unexpected namespace prefixes (e.g., x:, d:, ns0:),
-     * which can cause parsing issues. This function removes these prefixes
-     * to make the XML structure compatible with expected formats.
-     *
-     * @return void
-     */
-    public function scanNonStandardNamespaces(): void
-    {
-        $securityScanner = $this->reader->getSecurityScanner();
-
-        if ($securityScanner instanceof XmlScanner) {
-            $securityScanner->setAdditionalCallback([$this, 'fixXmlNamespaces']);
-        }
-    }
-
-    /**
-     * Fixes incorrect XML namespace prefixes.
-     *
-     * @param string $xml
-     * @return array|string
-     */
-    public function fixXmlNamespaces(string $xml)
-    {
-        return str_replace(
-            [
-                '<x:',
-                '</x:',
-                '<d:',
-                '</d:',
-                '<ns0:',
-                '</ns0:',
-            ],
-            [
-                '<',
-                '</',
-                '<',
-                '</',
-                '<',
-                '</',
-            ],
-            $xml
-        );
     }
 }
