@@ -3,6 +3,8 @@
 namespace Maatwebsite\Excel\Tests\Concerns;
 
 use Illuminate\Foundation\Bus\PendingDispatch;
+use Maatwebsite\Excel\Tests\Data\Stubs\Database\User;
+use Maatwebsite\Excel\Tests\Data\Stubs\EloquentCollectionWithPrepareRowsExport;
 use Maatwebsite\Excel\Tests\Data\Stubs\EloquentLazyCollectionExport;
 use Maatwebsite\Excel\Tests\Data\Stubs\EloquentLazyCollectionQueuedExport;
 use Maatwebsite\Excel\Tests\Data\Stubs\QueuedExport;
@@ -96,5 +98,26 @@ class FromCollectionTest extends TestCase
             )->toArray(),
             $contents
         );
+    }
+
+    public function test_can_export_from_collection_with_prepare_rows()
+    {
+        $export = new EloquentCollectionWithPrepareRowsExport;
+
+        $this->assertTrue(method_exists($export, 'prepareRows'));
+
+        $response = $export->store('from-collection-store.xlsx');
+
+        $this->assertTrue($response);
+
+        $contents = $this->readAsArray(__DIR__ . '/../Data/Disks/Local/from-collection-store.xlsx', 'Xlsx');
+
+        $allUsers = $export->collection()->map(function (User $user) {
+            $user->name .= '_prepared_name';
+
+            return array_values($user->toArray());
+        })->toArray();
+
+        $this->assertEquals($allUsers, $contents);
     }
 }
